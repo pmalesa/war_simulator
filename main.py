@@ -1,9 +1,8 @@
-import PySide6.QtCore
+import pygame
 
 def main():
-    print("Welcome to CT image annotator!")
-    print(PySide6.__version__)
-    print(PySide6.QtCore.__version__)
+    print("Welcome to War Simulator!")
+
 
 if __name__ == "__main__":
     main()

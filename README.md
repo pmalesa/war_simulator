@@ -1,15 +1,15 @@
-# ct_image_annotator
+# war_simulator
 A small GUI app designed to annotating CT images.
 
 ## Virtual environment
 ### Setup
 ```bash
-python -m venv ct_image_annotator_env 
+python -m venv war_simulator_env 
 ```
 
 ### Activation
 ```bash
-source ct_image_annotator_env/bin/activate
+source war_simulator_env/bin/activate
 ```
 
 ### Deactivation
