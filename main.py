@@ -1,8 +1,10 @@
-import pygame
 import sys
+
+import pygame
 
 WIDTH = 800
 HEIGHT = 600
+
 
 def main():
     print("Welcome to War Simulator!")
@@ -18,7 +20,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        
+
         screen.fill((30, 30, 30))
 
         # Update display
@@ -27,6 +29,7 @@ def main():
     # Cleanup
     pygame.quit()
     sys.exit()
+
 
 if __name__ == "__main__":
     main()

@@ -27,6 +27,16 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## Install pre-commit
+```bash
+pre-commit install
+```
+
+## Run pre-commit manually
+```bash
+pre-commit run --all-files
+```
+
 ## Executable file generation
 ### Windows
 ```bash
