@@ -24,7 +24,7 @@ pip install -r requirements.txt
 
 ## Application startup
 ```bash
-python main.py
+python -m src.main
 ```
 
 ## Install pre-commit
