@@ -41,7 +41,10 @@ class Scene:
 
             # Draw soldiers
             for soldier in self._soldiers:
-                self.__move_soldier_randomly(soldier)
+                if random.randint(0, 100) < 80:
+                    soldier.move([-1, -1])
+                else:
+                    soldier.move([1, 1])
                 pygame.draw.circle(self._screen, soldier.color, soldier.position, soldier.size)
 
             # Update display
@@ -50,16 +53,3 @@ class Scene:
         # Cleanup
         pygame.quit()
         sys.exit()
-
-    def __move_soldier_randomly(self, soldier: Soldier):
-        val_x: int = random.randint(-1, 1)
-        val_y: int = random.randint(-1, 1)
-        new_x: int = soldier.position[0] + val_x
-        new_y: int = soldier.position[1] + val_y
-        soldier.position = (
-            self.__clamp(new_x, self._screen_width),
-            self.__clamp(new_y, self._screen_height),
-        )
-
-    def __clamp(self, x: int, max_val: int) -> int:
-        return min(max(0, x), max_val)

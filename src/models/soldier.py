@@ -7,9 +7,10 @@ class Soldier:
         self,
         name: str,
         health: int = MAX_HEALTH,
-        position: tuple[int, int] = (0, 0),
+        position: list[int] = [0, 0],
         team: int = 1,
         size: int = DEFAULT_SIZE,
+        step: int = DEFAULT_STEP,
     ):
         self.name = name
         self.health = health
@@ -17,6 +18,7 @@ class Soldier:
         self.color = None
         self.team = team
         self.size = size
+        self.step = step
 
         if self.team == 1:
             self.color: tuple[int, int, int] = (255, 0, 0)
@@ -29,11 +31,14 @@ class Soldier:
     def is_alive(self) -> bool:
         return self.health > 0
 
-    def move(self, direction: tuple[int, int] = (0, 0)):
+    def move(self, direction: list[int] = [0, 0]):
         if not direction:
             return
-        self.position[0] += direction[0]
-        self.position[1] += direction[1]
+        self.position[0] += self._clamp(direction[0])
+        self.position[1] += self._clamp(direction[1])
 
     def draw(self):
         pass
+
+    def _clamp(self, x: int) -> int:
+        return min(max(-self.step, x), self.step)
