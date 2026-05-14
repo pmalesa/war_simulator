@@ -19,6 +19,7 @@ class Soldier:
         self.name = name
         self.health = health
         self.position = position
+        self.face_direction: list[int] = [0, 0]
         self.color = None
         self.team = team
         self.size = size
@@ -29,6 +30,9 @@ class Soldier:
         else:
             self.color: tuple[int, int, int] = (0, 255, 0)
 
+    def shoot(self):
+        pass
+
     def take_damage(self, damage: int) -> None:
         self.health = max(0, self.health - damage)
 
@@ -38,8 +42,8 @@ class Soldier:
     def move(self, direction: list[int] = [0, 0]):
         if not direction:
             return
-        self.position[0] += self._clamp(direction[0])
-        self.position[1] += self._clamp(direction[1])
+        self.position[0] += direction[0]
+        self.position[1] += direction[1]
 
     def draw(self, screen: Surface):
         if not isinstance(screen, Surface) or not screen:
@@ -47,6 +51,3 @@ class Soldier:
                 f"Invalid type of screen object: {type(screen)} instead of pygame.Surface."
             )
         pygame.draw.circle(screen, self.color, self.position, self.size)
-
-    def _clamp(self, x: int) -> int:
-        return min(max(-self.step, x), self.step)
