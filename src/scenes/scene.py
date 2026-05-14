@@ -45,7 +45,7 @@ class Scene:
                     soldier.move([-1, -1])
                 else:
                     soldier.move([1, 1])
-                pygame.draw.circle(self._screen, soldier.color, soldier.position, soldier.size)
+                soldier.draw(self._screen)
 
             # Update display
             pygame.display.flip()

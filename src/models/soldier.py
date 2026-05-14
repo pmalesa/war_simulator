@@ -1,3 +1,7 @@
+import pygame
+from pygame import Surface
+
+
 class Soldier:
     MAX_HEALTH: int = 100
     DEFAULT_STEP: int = 1
@@ -37,8 +41,12 @@ class Soldier:
         self.position[0] += self._clamp(direction[0])
         self.position[1] += self._clamp(direction[1])
 
-    def draw(self):
-        pass
+    def draw(self, screen: Surface):
+        if not isinstance(screen, Surface) or not screen:
+            raise RuntimeError(
+                f"Invalid type of screen object: {type(screen)} instead of pygame.Surface."
+            )
+        pygame.draw.circle(screen, self.color, self.position, self.size)
 
     def _clamp(self, x: int) -> int:
         return min(max(-self.step, x), self.step)
