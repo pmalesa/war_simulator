@@ -6,6 +6,7 @@ class Soldier:
     MAX_HEALTH: int = 100
     DEFAULT_STEP: int = 1
     DEFAULT_SIZE: int = 10
+    DEFAULT_AWARENESS_RADIUS = 100
 
     def __init__(
         self,
@@ -15,15 +16,21 @@ class Soldier:
         team: int = 1,
         size: int = DEFAULT_SIZE,
         step: int = DEFAULT_STEP,
+        awareness_radius: int = DEFAULT_AWARENESS_RADIUS,
     ):
         self.name = name
         self.health = health
+
         self.position = position
         self.face_direction: list[int] = [0, 0]
+
         self.color = None
         self.team = team
+
         self.size = size
         self.step = step
+
+        self.awareness_radius = awareness_radius
 
         if self.team == 1:
             self.color: tuple[int, int, int] = (255, 0, 0)
