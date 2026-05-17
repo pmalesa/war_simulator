@@ -7,6 +7,7 @@ class Soldier:
     DEFAULT_STEP: int = 1
     DEFAULT_SIZE: int = 10
     DEFAULT_AWARENESS_RADIUS = 100
+    DEFAULT_FIELD_OF_VIEW_ANGLE = 30
 
     def __init__(
         self,
@@ -17,6 +18,7 @@ class Soldier:
         size: int = DEFAULT_SIZE,
         step: int = DEFAULT_STEP,
         awareness_radius: int = DEFAULT_AWARENESS_RADIUS,
+        field_of_view_angle: int = DEFAULT_FIELD_OF_VIEW_ANGLE,
     ):
         self.name = name
         self.health = health
@@ -31,6 +33,7 @@ class Soldier:
         self.step = step
 
         self.awareness_radius = awareness_radius
+        self.field_of_view_angle = field_of_view_angle
 
         if self.team == 1:
             self.color: tuple[int, int, int] = (255, 0, 0)
