@@ -11,6 +11,7 @@ class Soldier:
 
     def __init__(
         self,
+        id: int,
         name: str,
         health: int = MAX_HEALTH,
         position: list[int] | None = None,
@@ -20,6 +21,7 @@ class Soldier:
         awareness_radius: int = DEFAULT_AWARENESS_RADIUS,
         field_of_view_angle: int = DEFAULT_FIELD_OF_VIEW_ANGLE,
     ):
+        self.id = id
         self.name = name
         self.health = health
 
@@ -56,3 +58,25 @@ class Soldier:
                 f"Invalid type of screen object: {type(screen)} instead of pygame.Surface."
             )
         pygame.draw.circle(screen, self.color, self.position, self.size)
+
+    def get_nearby_soldiers(self, soldiers: list["Soldier"]) -> list["Soldier"]:
+        nearby_soldiers = []
+
+        radius_squared = self.awareness_radius**2
+        x1, y1 = self.position
+
+        for soldier in soldiers:
+            if soldier is self:
+                continue
+
+            x2, y2 = soldier.position
+
+            dx = x2 - x1
+            dy = y2 - y1
+
+            distance_squared = dx * dx + dy * dy
+
+            if distance_squared <= radius_squared:
+                nearby_soldiers.append(soldier)
+
+        return nearby_soldiers

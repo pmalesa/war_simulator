@@ -53,6 +53,8 @@ class Scene:
 
     def _update(self) -> None:
         for soldier in self._soldiers:
+            # nearby_soldiers = soldier.get_nearby_soldiers(self._soldiers)
+
             if random.randint(0, 100) < 80:
                 soldier.move([-1, -1])
             else:
