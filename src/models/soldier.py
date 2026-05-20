@@ -46,11 +46,14 @@ class Soldier:
     def is_alive(self) -> bool:
         return self.health > 0
 
-    def move(self, direction: list[int] | None = None) -> None:
+    def move(self, screen: Surface, direction: list[int] | None = None) -> None:
         if not direction:
             return
         self.position[0] += direction[0] * self.step
         self.position[1] += direction[1] * self.step
+
+        self.position[0] = max(0, min(self.position[0], screen.get_width()))
+        self.position[1] = max(0, min(self.position[1], screen.get_height()))
 
     def draw(self, screen: Surface) -> None:
         if not isinstance(screen, Surface) or not screen:
