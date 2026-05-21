@@ -1,5 +1,3 @@
-import random
-
 import pygame
 
 from src.models.soldier import Soldier
@@ -53,27 +51,19 @@ class Scene:
 
     def _update(self) -> None:
         for soldier in self._soldiers:
-            direction = [1, 1]
+            if (
+                soldier.position[0] <= soldier.size
+                or soldier.position[0] >= self._width - soldier.size
+            ):
+                soldier.velocity[0] *= -1
+            if (
+                soldier.position[1] <= soldier.size
+                or soldier.position[1] >= self._height - soldier.size
+            ):
+                soldier.velocity[1] *= -1
 
-            if soldier.position[0] <= soldier.size:
-                direction[0] = 1
-            elif soldier.position[0] >= self._width - soldier.size:
-                direction[0] = -1
-
-            if soldier.position[1] <= soldier.size:
-                direction[1] = 1
-            elif soldier.position[1] >= self._height - soldier.size:
-                direction[1] = -1
-
-            nearby_soldiers = soldier.get_nearby_soldiers(self._soldiers)
-
-            if nearby_soldiers:
-                soldier.position = [
-                    random.randint(soldier.size, self._width),
-                    random.randint(soldier.size, self._height),
-                ]
-
-            soldier.move(self._screen, direction)
+            soldier.move(self._screen)
+            soldier.update_nearby_soldiers(self._soldiers)
 
     def _draw(self) -> None:
         self._screen.fill((30, 30, 30))
