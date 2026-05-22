@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 from src.models.soldier import Soldier
@@ -8,16 +10,11 @@ class Scene:
     DEFAULT_HEIGHT = 600
     FPS = 60
 
-    def __init__(
-        self,
-        width: int = DEFAULT_WIDTH,
-        height: int = DEFAULT_HEIGHT,
-        soldiers: list[Soldier] | None = None,
-    ) -> None:
+    def __init__(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT) -> None:
         self._width = width
         self._height = height
         self._running = False
-        self._soldiers = soldiers if soldiers is not None else []
+        self._soldiers = self._generate_soldiers(100, 10)
 
         pygame.init()
 
@@ -69,3 +66,64 @@ class Scene:
         self._screen.fill((30, 30, 30))
         for soldier in self._soldiers:
             soldier.draw(self._screen)
+
+    def _generate_soldiers(self, n_soldiers: int, n_teams: int = 2) -> list[Soldier]:
+        soldiers = []
+
+        if n_soldiers % n_teams != 0:
+            print("Chosen number of soldiers is not divisible by the number teams.")
+
+        n_soldiers_per_team: int = n_soldiers // n_teams
+        n_soldiers_left: int = n_soldiers % n_teams
+        id: int = 1
+
+        for team in range(n_teams):
+            team_color: tuple[int] = (
+                random.randint(0, 255),
+                random.randint(0, 255),
+                random.randint(0, 255),
+            )
+
+            for i in range(n_soldiers_per_team):
+                soldiers.append(
+                    Soldier(
+                        id,
+                        f"Soldier_{id}",
+                        100,
+                        [5, 5],
+                        [
+                            random.randint(
+                                Soldier.DEFAULT_SIZE, self._width - Soldier.DEFAULT_SIZE
+                            ),
+                            random.randint(
+                                Soldier.DEFAULT_SIZE, self._height - Soldier.DEFAULT_SIZE
+                            ),
+                        ],
+                        team + 1,
+                        team_color,
+                    )
+                )
+
+            if n_soldiers_left > 0:
+                id += 1
+                n_soldiers_left -= 1
+                soldiers.append(
+                    Soldier(
+                        id,
+                        f"Soldier_{id}",
+                        100,
+                        [5, 5],
+                        [
+                            random.randint(
+                                Soldier.DEFAULT_SIZE, self._width - Soldier.DEFAULT_SIZE
+                            ),
+                            random.randint(
+                                Soldier.DEFAULT_SIZE, self._height - Soldier.DEFAULT_SIZE
+                            ),
+                        ],
+                        team + 1,
+                        team_color,
+                    )
+                )
+
+        return soldiers

@@ -7,7 +7,7 @@ from pygame import Surface
 class Soldier:
     MAX_HEALTH: int = 100
     DEFAULT_STEP: int = 1
-    DEFAULT_SIZE: int = 10
+    DEFAULT_SIZE: int = 5
     DEFAULT_AWARENESS_RADIUS = 10
     DEFAULT_FIELD_OF_VIEW_ANGLE = 30
 
@@ -19,6 +19,7 @@ class Soldier:
         velocity: list[int] | None = None,
         position: list[int] | None = None,
         team: int = 1,
+        color: tuple[int] | None = None,
         size: int = DEFAULT_SIZE,
         step: int = DEFAULT_STEP,
         awareness_radius: int = DEFAULT_AWARENESS_RADIUS,
@@ -33,7 +34,7 @@ class Soldier:
         self.position = position if position is not None else [0, 0]
         self.face_direction: list[int] = [0, 0]
 
-        self.color: tuple[int, int, int] = (255, 0, 0) if team == 1 else (0, 255, 0)
+        self.color = color if color is not None else (255, 0, 0)
         self.team = team
 
         self.size = size
