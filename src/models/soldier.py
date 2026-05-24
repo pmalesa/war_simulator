@@ -7,7 +7,7 @@ from pygame import Surface
 class Soldier:
     MAX_HEALTH: int = 100
     DEFAULT_STEP: int = 1
-    DEFAULT_SIZE: int = 5
+    DEFAULT_SIZE: int = 10
     DEFAULT_AWARENESS_RADIUS = 10
     DEFAULT_FIELD_OF_VIEW_ANGLE = 30
 
@@ -65,10 +65,16 @@ class Soldier:
 
         for nearby_soldier in self.nearby_soldiers:
             if nearby_soldier.team != self.team:
-                self.position = [
-                    random.randint(self.size, screen.get_width() - self.size),
-                    random.randint(self.size, screen.get_height() - self.size),
-                ]
+                self.health = max(0, self.health - 20)
+
+                self.velocity[0] *= -1
+                self.velocity[1] *= -1
+
+                if not self.is_alive():
+                    self.position = [
+                        random.randint(self.size, screen.get_width() - self.size),
+                        random.randint(self.size, screen.get_height() - self.size),
+                    ]
 
     def draw(self, screen: Surface) -> None:
         if not isinstance(screen, Surface) or not screen:

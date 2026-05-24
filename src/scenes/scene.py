@@ -90,7 +90,7 @@ class Scene:
                         id,
                         f"Soldier_{id}",
                         100,
-                        [5, 5],
+                        [2, 2],
                         [
                             random.randint(
                                 Soldier.DEFAULT_SIZE, self._width - Soldier.DEFAULT_SIZE
@@ -112,7 +112,7 @@ class Scene:
                         id,
                         f"Soldier_{id}",
                         100,
-                        [5, 5],
+                        [2, 2],
                         [
                             random.randint(
                                 Soldier.DEFAULT_SIZE, self._width - Soldier.DEFAULT_SIZE
