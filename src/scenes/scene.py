@@ -3,6 +3,7 @@ import random
 import pygame
 
 from src.models.soldier import Soldier
+from src.models.team import TEAM_COLORS, Team
 
 
 class Scene:
@@ -14,7 +15,7 @@ class Scene:
         self._width = width
         self._height = height
         self._running = False
-        self._soldiers = self._generate_soldiers(100, 10)
+        self._soldiers = self._generate_soldiers(100)
 
         pygame.init()
 
@@ -67,63 +68,54 @@ class Scene:
         for soldier in self._soldiers:
             soldier.draw(self._screen)
 
-    def _generate_soldiers(self, n_soldiers: int, n_teams: int = 2) -> list[Soldier]:
+    def _generate_soldiers(self, n_soldiers: int) -> list[Soldier]:
         soldiers = []
 
-        if n_soldiers % n_teams != 0:
+        if n_soldiers % 2 != 0:
             print("Chosen number of soldiers is not divisible by the number teams.")
 
-        n_soldiers_per_team: int = n_soldiers // n_teams
-        n_soldiers_left: int = n_soldiers % n_teams
+        n_soldiers_per_team: int = n_soldiers // 2
         id: int = 1
 
-        for team in range(n_teams):
-            team_color: tuple[int] = (
-                random.randint(0, 255),
-                random.randint(0, 255),
-                random.randint(0, 255),
+        # Generate GREEN team soldiers
+        for i in range(n_soldiers_per_team):
+            soldiers.append(
+                Soldier(
+                    id,
+                    f"Soldier_{id}",
+                    100,
+                    [2, 0],
+                    [
+                        random.randint(
+                            Soldier.DEFAULT_SIZE, (self._width // 2) - Soldier.DEFAULT_SIZE
+                        ),
+                        random.randint(Soldier.DEFAULT_SIZE, self._height - Soldier.DEFAULT_SIZE),
+                    ],
+                    1,
+                    TEAM_COLORS[Team.GREEN],
+                )
             )
+            id += 1
 
-            for i in range(n_soldiers_per_team):
-                soldiers.append(
-                    Soldier(
-                        id,
-                        f"Soldier_{id}",
-                        100,
-                        [2, 2],
-                        [
-                            random.randint(
-                                Soldier.DEFAULT_SIZE, self._width - Soldier.DEFAULT_SIZE
-                            ),
-                            random.randint(
-                                Soldier.DEFAULT_SIZE, self._height - Soldier.DEFAULT_SIZE
-                            ),
-                        ],
-                        team + 1,
-                        team_color,
-                    )
+        # Generate RED team soldiers
+        for i in range(n_soldiers - n_soldiers_per_team):
+            soldiers.append(
+                Soldier(
+                    id,
+                    f"Soldier_{id}",
+                    100,
+                    [-2, 0],
+                    [
+                        random.randint(
+                            Soldier.DEFAULT_SIZE + (self._width // 2),
+                            self._width - Soldier.DEFAULT_SIZE,
+                        ),
+                        random.randint(Soldier.DEFAULT_SIZE, self._height - Soldier.DEFAULT_SIZE),
+                    ],
+                    2,
+                    TEAM_COLORS[Team.RED],
                 )
-
-            if n_soldiers_left > 0:
-                id += 1
-                n_soldiers_left -= 1
-                soldiers.append(
-                    Soldier(
-                        id,
-                        f"Soldier_{id}",
-                        100,
-                        [2, 2],
-                        [
-                            random.randint(
-                                Soldier.DEFAULT_SIZE, self._width - Soldier.DEFAULT_SIZE
-                            ),
-                            random.randint(
-                                Soldier.DEFAULT_SIZE, self._height - Soldier.DEFAULT_SIZE
-                            ),
-                        ],
-                        team + 1,
-                        team_color,
-                    )
-                )
+            )
+            id += 1
 
         return soldiers
