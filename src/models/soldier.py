@@ -1,3 +1,4 @@
+import math
 import random
 
 import pygame
@@ -16,8 +17,8 @@ class Soldier:
         id: int,
         name: str,
         health: int = MAX_HEALTH,
-        velocity: list[int] | None = None,
-        position: list[int] | None = None,
+        velocity: list[float] | None = None,
+        position: list[float] | None = None,
         team: int = 1,
         color: tuple[int] | None = None,
         size: int = DEFAULT_SIZE,
@@ -32,6 +33,7 @@ class Soldier:
 
         self.velocity = velocity if velocity is not None else [1, 1]
         self.position = position if position is not None else [0, 0]
+        self.direction = None
         self.face_direction: list[int] = [0, 0]
 
         self.color = color if color is not None else (255, 0, 0)
@@ -57,6 +59,8 @@ class Soldier:
     def move(self, screen: Surface) -> None:
         if not self.velocity:
             return
+
+        self.direction = self._get_direction()
         self.position[0] += self.velocity[0] * self.step
         self.position[1] += self.velocity[1] * self.step
 
@@ -82,6 +86,7 @@ class Soldier:
                 f"Invalid type of screen object: {type(screen)} instead of pygame.Surface."
             )
         pygame.draw.circle(screen, self.color, self.position, self.size)
+        self._draw_direction_line(screen)
 
     def update_nearby_soldiers(self, soldiers: list["Soldier"]) -> None:
         self.nearby_soldiers = []
@@ -102,3 +107,29 @@ class Soldier:
 
             if distance_squared <= radius_squared:
                 self.nearby_soldiers.append(soldier)
+
+    def _get_direction(self) -> list[float]:
+        if self.velocity is None:
+            return self.direction
+
+        x: float = self.velocity[0]
+        y: float = self.velocity[1]
+
+        magnitude: float = math.hypot(x, y)
+
+        if magnitude == 0:
+            return self.direction
+
+        return [x / magnitude, y / magnitude]
+
+    def _draw_direction_line(self, screen: Surface) -> None:
+        if self.direction is None:
+            return
+
+        start_pos = self.position
+        end_pos = [
+            self.position[0] + self.direction[0] * self.size,
+            self.position[1] + self.direction[1] * self.size,
+        ]
+
+        pygame.draw.line(screen, (0, 0, 0), start_pos, end_pos, 2)
