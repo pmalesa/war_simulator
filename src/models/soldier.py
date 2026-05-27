@@ -10,6 +10,7 @@ class Soldier:
     DEFAULT_STEP: int = 1
     DEFAULT_SIZE: int = 10
     DEFAULT_AWARENESS_RADIUS = 10
+    DEFAULT_FIELD_OF_VIEW_RADIUS = 100
     DEFAULT_FIELD_OF_VIEW_ANGLE = 30
 
     def __init__(

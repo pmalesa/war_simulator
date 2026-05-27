@@ -7,14 +7,15 @@ from src.models.team import TEAM_COLORS, Team
 
 
 class Scene:
-    DEFAULT_WIDTH = 800
-    DEFAULT_HEIGHT = 600
+    DEFAULT_WIDTH = 1200
+    DEFAULT_HEIGHT = 1024
     FPS = 60
 
     def __init__(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT) -> None:
         self._width = width
         self._height = height
         self._running = False
+        self._pause = False
         self._soldiers = self._generate_soldiers(100)
 
         pygame.init()
@@ -32,6 +33,10 @@ class Scene:
 
         while self._running:
             self._handle_events()
+
+            if self._pause:
+                continue
+
             self._update()
             self._draw()
 
@@ -46,6 +51,10 @@ class Scene:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self._running = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    self._pause = not self._pause
 
     def _update(self) -> None:
         for soldier in self._soldiers:
