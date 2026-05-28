@@ -16,7 +16,8 @@ class Scene:
         self._height = height
         self._running = False
         self._pause = False
-        self._soldiers = self._generate_soldiers(100)
+        self._max_soldiers = 100
+        self._soldiers = self._generate_soldiers()
 
         pygame.init()
 
@@ -55,6 +56,8 @@ class Scene:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     self._pause = not self._pause
+                if event.key == pygame.K_r:
+                    self._soldiers = self._generate_soldiers()
 
     def _update(self) -> None:
         for soldier in self._soldiers:
@@ -77,13 +80,15 @@ class Scene:
         for soldier in self._soldiers:
             soldier.draw(self._screen)
 
-    def _generate_soldiers(self, n_soldiers: int) -> list[Soldier]:
+    def _generate_soldiers(
+        self,
+    ) -> list[Soldier]:
         soldiers = []
 
-        if n_soldiers % 2 != 0:
+        if self._max_soldiers % 2 != 0:
             print("Chosen number of soldiers is not divisible by the number teams.")
 
-        n_soldiers_per_team: int = n_soldiers // 2
+        n_soldiers_per_team: int = self._max_soldiers // 2
         id: int = 1
 
         # Generate GREEN team soldiers
@@ -107,7 +112,7 @@ class Scene:
             id += 1
 
         # Generate RED team soldiers
-        for i in range(n_soldiers - n_soldiers_per_team):
+        for i in range(self._max_soldiers - n_soldiers_per_team):
             soldiers.append(
                 Soldier(
                     id,
