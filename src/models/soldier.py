@@ -11,7 +11,8 @@ class Soldier:
     DEFAULT_SIZE: int = 10
     DEFAULT_AWARENESS_RADIUS = 10
     DEFAULT_FIELD_OF_VIEW_RADIUS = 100
-    DEFAULT_FIELD_OF_VIEW_ANGLE = 30
+    DEFAULT_FIELD_OF_VIEW_ANGLE = 60
+    DEFAULT_FIELD_OF_VIEW_RANGE = 100
 
     def __init__(
         self,
@@ -25,7 +26,8 @@ class Soldier:
         size: int = DEFAULT_SIZE,
         step: int = DEFAULT_STEP,
         awareness_radius: int = DEFAULT_AWARENESS_RADIUS,
-        field_of_view_angle: int = DEFAULT_FIELD_OF_VIEW_ANGLE,
+        fov_angle: int = DEFAULT_FIELD_OF_VIEW_ANGLE,
+        fov_range: int = DEFAULT_FIELD_OF_VIEW_RANGE,
         nearby_soldiers: list["Soldier"] | None = None,
     ):
         self.id = id
@@ -37,16 +39,20 @@ class Soldier:
         self.direction = None
         self.face_direction: list[int] = [0, 0]
 
+        self.default_color = color if color is not None else (255, 0, 0)
         self.color = color if color is not None else (255, 0, 0)
+        self.direction_line_color = (0, 0, 0)
         self.team = team
 
         self.size = size
         self.step = step
 
         self.awareness_radius = awareness_radius
-        self.field_of_view_angle = field_of_view_angle
+        self.fov_angle = fov_angle
+        self.fov_range = fov_range
 
         self.nearby_soldiers = nearby_soldiers if nearby_soldiers is not None else []
+        self.visible_soldiers = []
 
     def shoot(self) -> None:
         pass
@@ -67,6 +73,13 @@ class Soldier:
 
         self.position[0] = max(0, min(self.position[0], screen.get_width() - self.size))
         self.position[1] = max(0, min(self.position[1], screen.get_height() - self.size))
+
+        if self._is_someone_ahead():
+            self.color = (255, 255, 0)
+            self.direction_line_color = (255, 0, 0)
+        else:
+            self.color = self.default_color
+            self.direction_line_color = (0, 0, 0)
 
         for nearby_soldier in self.nearby_soldiers:
             if nearby_soldier.team != self.team:
@@ -109,6 +122,37 @@ class Soldier:
             if distance_squared <= radius_squared:
                 self.nearby_soldiers.append(soldier)
 
+    def update_visible_soldiers(self, soldiers: list["Soldier"]) -> None:
+        self.visible_soldiers = []
+
+        radius_squared = self.fov_range**2
+        x1, y1 = self.position
+
+        for soldier in soldiers:
+            if soldier is self:
+                continue
+
+            x2, y2 = soldier.position
+
+            dx = x2 - x1
+            dy = y2 - y1
+
+            distance_squared = dx * dx + dy * dy
+
+            if distance_squared <= radius_squared:
+                distance = max(0.0001, math.sqrt(distance_squared))
+
+                target_x = dx / distance
+                target_y = dy / distance
+
+                dot = self.direction[0] * target_x + self.direction[1] * target_y
+
+                half_fov = self.fov_angle / 2
+                cos_limit = math.cos(math.radians(half_fov))
+
+                if dot >= cos_limit:
+                    self.visible_soldiers.append(soldier)
+
     def _get_direction(self) -> list[float]:
         if self.velocity is None:
             return self.direction
@@ -133,4 +177,10 @@ class Soldier:
             self.position[1] + self.direction[1] * self.size,
         ]
 
-        pygame.draw.line(screen, (0, 0, 0), start_pos, end_pos, 2)
+        pygame.draw.line(screen, self.direction_line_color, start_pos, end_pos, 2)
+
+    def _is_someone_ahead(self) -> bool:
+        for soldier in self.visible_soldiers:
+            if self.team != soldier.team:
+                return True
+        return False

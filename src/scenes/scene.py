@@ -74,6 +74,7 @@ class Scene:
 
             soldier.move(self._screen)
             soldier.update_nearby_soldiers(self._soldiers)
+            soldier.update_visible_soldiers(self._soldiers)
 
     def _draw(self) -> None:
         self._screen.fill((30, 30, 30))
