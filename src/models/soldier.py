@@ -36,8 +36,8 @@ class Soldier:
 
         self.velocity = velocity if velocity is not None else [1, 1]
         self.position = position if position is not None else [0, 0]
-        self.direction = None
-        self.face_direction: list[int] = [0, 0]
+        self.angle: float = 0.0
+        self.facing_angle: float = 0.0
 
         self.default_color = color if color is not None else (255, 0, 0)
         self.color = color if color is not None else (255, 0, 0)
@@ -67,12 +67,13 @@ class Soldier:
         if not self.velocity:
             return
 
-        self.direction = self._get_direction()
         self.position[0] += self.velocity[0] * self.step
         self.position[1] += self.velocity[1] * self.step
 
         self.position[0] = max(0, min(self.position[0], screen.get_width() - self.size))
         self.position[1] = max(0, min(self.position[1], screen.get_height() - self.size))
+
+        self._update_angle()
 
         if self._is_someone_ahead():
             self.color = (255, 255, 0)
@@ -125,8 +126,16 @@ class Soldier:
     def update_visible_soldiers(self, soldiers: list["Soldier"]) -> None:
         self.visible_soldiers = []
 
+        if self.angle is None:
+            return
+
+        direction_x, direction_y = self._get_direction()
+
         radius_squared = self.fov_range**2
         x1, y1 = self.position
+
+        half_fov = self.fov_angle / 2
+        cos_limit = math.cos(math.radians(half_fov))
 
         for soldier in soldiers:
             if soldier is self:
@@ -139,42 +148,31 @@ class Soldier:
 
             distance_squared = dx * dx + dy * dy
 
-            if distance_squared <= radius_squared:
-                distance = max(0.0001, math.sqrt(distance_squared))
+            if distance_squared > radius_squared:
+                continue
 
-                target_x = dx / distance
-                target_y = dy / distance
+            distance = max(0.0001, math.sqrt(distance_squared))
 
-                dot = self.direction[0] * target_x + self.direction[1] * target_y
+            target_x = dx / distance
+            target_y = dy / distance
 
-                half_fov = self.fov_angle / 2
-                cos_limit = math.cos(math.radians(half_fov))
+            dot = direction_x * target_x + direction_y * target_y
 
-                if dot >= cos_limit:
-                    self.visible_soldiers.append(soldier)
-
-    def _get_direction(self) -> list[float]:
-        if self.velocity is None:
-            return self.direction
-
-        x: float = self.velocity[0]
-        y: float = self.velocity[1]
-
-        magnitude: float = math.hypot(x, y)
-
-        if magnitude == 0:
-            return self.direction
-
-        return [x / magnitude, y / magnitude]
+            if dot >= cos_limit:
+                self.visible_soldiers.append(soldier)
 
     def _draw_direction_line(self, screen: Surface) -> None:
-        if self.direction is None:
+        if self.angle is None:
             return
+
+        angle_rad = math.radians(self.angle)
+        dx = math.cos(angle_rad)
+        dy = math.sin(angle_rad)
 
         start_pos = self.position
         end_pos = [
-            self.position[0] + self.direction[0] * self.size,
-            self.position[1] + self.direction[1] * self.size,
+            self.position[0] + dx * self.size,
+            self.position[1] + dy * self.size,
         ]
 
         pygame.draw.line(screen, self.direction_line_color, start_pos, end_pos, 2)
@@ -184,3 +182,18 @@ class Soldier:
             if self.team != soldier.team:
                 return True
         return False
+
+    def _get_direction(self) -> tuple[float, float]:
+        angle_rad = math.radians(self.angle)
+        return (math.cos(angle_rad), math.sin(angle_rad))
+
+    def _update_angle(self) -> None:
+        if self.velocity is None:
+            return
+
+        vx, vy = self.velocity
+
+        if vx == 0 and vy == 0:
+            return
+
+        self.angle = math.degrees(math.atan2(vy, vx))
