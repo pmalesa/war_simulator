@@ -13,6 +13,7 @@ class Soldier:
     DEFAULT_FIELD_OF_VIEW_RADIUS = 100
     DEFAULT_FIELD_OF_VIEW_ANGLE = 60
     DEFAULT_FIELD_OF_VIEW_RANGE = 100
+    TURN_ANGLE = 15
 
     def __init__(
         self,
@@ -67,6 +68,8 @@ class Soldier:
         if not self.velocity:
             return
 
+        self._update_velocity_from_angle()
+
         self.position[0] += self.velocity[0] * self.step
         self.position[1] += self.velocity[1] * self.step
 
@@ -74,6 +77,9 @@ class Soldier:
         self.position[1] = max(0, min(self.position[1], screen.get_height() - self.size))
 
         self._update_angle()
+
+        if self._is_edge_ahead(screen):
+            self._turn_right()
 
         if self._is_someone_ahead():
             self.color = (255, 255, 0)
@@ -94,6 +100,19 @@ class Soldier:
                         random.randint(self.size, screen.get_width() - self.size),
                         random.randint(self.size, screen.get_height() - self.size),
                     ]
+
+        if self.visible_soldiers:
+            x1, y2 = self.position
+            x2, y2 = self.visible_soldiers[0].position
+
+            target_x = x2 - x1
+            target_y = y2 - y2
+            cross = self.velocity[0] * target_y - self.velocity[1] * target_x
+
+            if cross > 0:
+                self._turn_left()
+            else:
+                self._turn_right()
 
     def draw(self, screen: Surface) -> None:
         if not isinstance(screen, Surface) or not screen:
@@ -197,3 +216,28 @@ class Soldier:
             return
 
         self.angle = math.degrees(math.atan2(vy, vx))
+
+    def _turn_left(self) -> None:
+        self.angle = (self.angle - self.TURN_ANGLE) % 360
+
+    def _turn_right(self) -> None:
+        self.angle = (self.angle + self.TURN_ANGLE) % 360
+
+    def _update_velocity_from_angle(self) -> None:
+        angle_rad: float = math.radians(self.angle)
+        self.velocity = [math.cos(angle_rad), math.sin(angle_rad)]
+
+    def _is_edge_ahead(self, screen: Surface) -> bool:
+        dx, dy = self._get_direction()
+
+        lookahead = self.size * 4
+
+        future_x = self.position[0] + dx * lookahead
+        future_y = self.position[1] + dy * lookahead
+
+        return (
+            future_x <= self.size
+            or future_x >= screen.get_width() - self.size
+            or future_y <= self.size
+            or future_y >= screen.get_height() - self.size
+        )
