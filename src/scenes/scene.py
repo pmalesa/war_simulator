@@ -16,7 +16,7 @@ class Scene:
         self._height = height
         self._running = False
         self._pause = False
-        self._max_soldiers = 100
+        self._max_soldiers = 200
         self._soldiers = self._generate_soldiers()
 
         pygame.init()
@@ -61,17 +61,6 @@ class Scene:
 
     def _update(self) -> None:
         for soldier in self._soldiers:
-            if (
-                soldier.position[0] <= soldier.size
-                or soldier.position[0] >= self._width - soldier.size
-            ):
-                soldier.velocity[0] *= -1
-            if (
-                soldier.position[1] <= soldier.size
-                or soldier.position[1] >= self._height - soldier.size
-            ):
-                soldier.velocity[1] *= -1
-
             soldier.move(self._screen)
             soldier.update_nearby_soldiers(self._soldiers)
             soldier.update_visible_soldiers(self._soldiers)
@@ -99,7 +88,6 @@ class Scene:
                     id,
                     f"Soldier_{id}",
                     100,
-                    [2, 0],
                     [
                         random.randint(
                             Soldier.DEFAULT_SIZE, (self._width // 2) - Soldier.DEFAULT_SIZE
@@ -119,7 +107,6 @@ class Scene:
                     id,
                     f"Soldier_{id}",
                     100,
-                    [-2, 0],
                     [
                         random.randint(
                             Soldier.DEFAULT_SIZE + (self._width // 2),

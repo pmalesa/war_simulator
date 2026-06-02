@@ -8,7 +8,7 @@ from pygame import Surface
 class Soldier:
     MAX_HEALTH: int = 100
     DEFAULT_STEP: int = 1
-    DEFAULT_SIZE: int = 10
+    DEFAULT_SIZE: int = 7
     DEFAULT_AWARENESS_RADIUS = 10
     DEFAULT_FIELD_OF_VIEW_RADIUS = 100
     DEFAULT_FIELD_OF_VIEW_ANGLE = 60
@@ -20,7 +20,6 @@ class Soldier:
         id: int,
         name: str,
         health: int = MAX_HEALTH,
-        velocity: list[float] | None = None,
         position: list[float] | None = None,
         team: int = 1,
         color: tuple[int] | None = None,
@@ -35,9 +34,8 @@ class Soldier:
         self.name = name
         self.health = health
 
-        self.velocity = velocity if velocity is not None else [1, 1]
         self.position = position if position is not None else [0, 0]
-        self.angle: float = 0.0
+        self.angle: float = float(random.randint(0, 360))
         self.facing_angle: float = 0.0
 
         self.default_color = color if color is not None else (255, 0, 0)
@@ -65,18 +63,15 @@ class Soldier:
         return self.health > 0
 
     def move(self, screen: Surface) -> None:
+        self._update()
+
         if not self.velocity:
             return
 
-        self._update_velocity_from_angle()
-
-        self.position[0] += self.velocity[0] * self.step
-        self.position[1] += self.velocity[1] * self.step
-
+        self.position[0] += self.velocity[0]
+        self.position[1] += self.velocity[1]
         self.position[0] = max(0, min(self.position[0], screen.get_width() - self.size))
         self.position[1] = max(0, min(self.position[1], screen.get_height() - self.size))
-
-        self._update_angle()
 
         if self._is_edge_ahead(screen):
             self._turn_right()
@@ -203,29 +198,18 @@ class Soldier:
         return False
 
     def _get_direction(self) -> tuple[float, float]:
-        angle_rad = math.radians(self.angle)
+        angle_rad: float = math.radians(self.angle)
         return (math.cos(angle_rad), math.sin(angle_rad))
 
-    def _update_angle(self) -> None:
-        if self.velocity is None:
-            return
-
-        vx, vy = self.velocity
-
-        if vx == 0 and vy == 0:
-            return
-
-        self.angle = math.degrees(math.atan2(vy, vx))
+    def _update(self) -> None:
+        angle_rad: float = math.radians(self.angle)
+        self.velocity = [math.cos(angle_rad) * self.step, math.sin(angle_rad) * self.step]
 
     def _turn_left(self) -> None:
         self.angle = (self.angle - self.TURN_ANGLE) % 360
 
     def _turn_right(self) -> None:
         self.angle = (self.angle + self.TURN_ANGLE) % 360
-
-    def _update_velocity_from_angle(self) -> None:
-        angle_rad: float = math.radians(self.angle)
-        self.velocity = [math.cos(angle_rad), math.sin(angle_rad)]
 
     def _is_edge_ahead(self, screen: Surface) -> bool:
         dx, dy = self._get_direction()
