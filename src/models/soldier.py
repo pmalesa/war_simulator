@@ -37,6 +37,7 @@ class Soldier:
         self.position = position if position is not None else [0, 0]
         self.angle: float = float(random.randint(0, 360))
         self.facing_angle: float = 0.0
+        self.active: bool = True
 
         self.default_color = color if color is not None else (255, 0, 0)
         self.color = color if color is not None else (255, 0, 0)
@@ -63,6 +64,9 @@ class Soldier:
         return self.health > 0
 
     def move(self, screen: Surface) -> None:
+        if not self.active:
+            return
+
         self._update()
 
         if not self.velocity:
@@ -91,10 +95,7 @@ class Soldier:
                 self.velocity[1] *= -1
 
                 if not self.is_alive():
-                    self.position = [
-                        random.randint(self.size, screen.get_width() - self.size),
-                        random.randint(self.size, screen.get_height() - self.size),
-                    ]
+                    self.active = False
 
         if self.visible_soldiers:
             x1, y2 = self.position
@@ -110,6 +111,9 @@ class Soldier:
                 self._turn_right()
 
     def draw(self, screen: Surface) -> None:
+        if not self.active:
+            return
+
         if not isinstance(screen, Surface) or not screen:
             raise RuntimeError(
                 f"Invalid type of screen object: {type(screen)} instead of pygame.Surface."
@@ -118,6 +122,9 @@ class Soldier:
         self._draw_direction_line(screen)
 
     def update_nearby_soldiers(self, soldiers: list["Soldier"]) -> None:
+        if not self.active:
+            return
+
         self.nearby_soldiers = []
 
         radius_squared = self.awareness_radius**2
@@ -138,6 +145,9 @@ class Soldier:
                 self.nearby_soldiers.append(soldier)
 
     def update_visible_soldiers(self, soldiers: list["Soldier"]) -> None:
+        if not self.active:
+            return
+
         self.visible_soldiers = []
 
         if self.angle is None:
@@ -174,6 +184,13 @@ class Soldier:
 
             if dot >= cos_limit:
                 self.visible_soldiers.append(soldier)
+
+    def respawn(self, screen: Surface) -> None:
+        self.active = True
+        self.position = [
+            random.randint(self.size, screen.get_width() - self.size),
+            random.randint(self.size, screen.get_height() - self.size),
+        ]
 
     def _draw_direction_line(self, screen: Surface) -> None:
         if self.angle is None:

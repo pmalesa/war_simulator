@@ -6,4 +6,4 @@ class Team(Enum):
     GREEN = 2
 
 
-TEAM_COLORS = {Team.RED: (255, 0, 0), Team.GREEN: (0, 255, 0)}
+TEAM_COLORS = {Team.RED: (200, 25, 50), Team.GREEN: (50, 200, 25)}
