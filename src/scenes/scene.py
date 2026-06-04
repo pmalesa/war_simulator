@@ -1,6 +1,7 @@
 import random
 
 import pygame
+from pygame import Rect
 
 from src.models.soldier import Soldier
 from src.models.team import TEAM_COLORS, Team
@@ -9,6 +10,8 @@ from src.models.team import TEAM_COLORS, Team
 class Scene:
     DEFAULT_WIDTH = 1200
     DEFAULT_HEIGHT = 1024
+    WALL_COUNT = 10
+    WALL_COLOR = (150, 150, 150)
     FPS = 60
 
     def __init__(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT) -> None:
@@ -18,6 +21,7 @@ class Scene:
         self._pause = False
         self._max_soldiers = 200
         self._soldiers = self._generate_soldiers()
+        self._obstacles = self._generate_obstacles(Scene.WALL_COUNT)
 
         pygame.init()
 
@@ -58,15 +62,20 @@ class Scene:
                     self._pause = not self._pause
                 if event.key == pygame.K_r:
                     self._soldiers = self._generate_soldiers()
+                    self._obstacles = self._generate_obstacles(Scene.WALL_COUNT)
 
     def _update(self) -> None:
         for soldier in self._soldiers:
-            soldier.move(self._screen)
+            soldier.move(self._screen, self._obstacles)
             soldier.update_nearby_soldiers(self._soldiers)
             soldier.update_visible_soldiers(self._soldiers)
 
     def _draw(self) -> None:
         self._screen.fill((30, 30, 30))
+
+        for obstacle in self._obstacles:
+            pygame.draw.rect(self._screen, Scene.WALL_COLOR, obstacle)
+
         for soldier in self._soldiers:
             soldier.draw(self._screen)
 
@@ -121,3 +130,22 @@ class Scene:
             id += 1
 
         return soldiers
+
+    def _generate_obstacles(self, count: int) -> list[Rect]:
+        obstacles = []
+
+        for _ in range(count):
+            if random.randint(0, 100) < 50:
+                width = random.randint(80, 180)
+                height = random.randint(15, 20)
+            else:
+                width = random.randint(15, 20)
+                height = random.randint(80, 180)
+
+            x = random.randint(0, self._width - width)
+            y = random.randint(0, self._height - height)
+
+            obstacle = Rect(x, y, width, height)
+            obstacles.append(obstacle)
+
+        return obstacles

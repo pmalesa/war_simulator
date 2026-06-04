@@ -2,12 +2,12 @@ import math
 import random
 
 import pygame
-from pygame import Surface
+from pygame import Rect, Surface
 
 
 class Soldier:
     MAX_HEALTH: int = 100
-    DEFAULT_STEP: int = 1
+    DEFAULT_STEP: int = 2
     DEFAULT_SIZE: int = 7
     DEFAULT_AWARENESS_RADIUS = 10
     DEFAULT_FIELD_OF_VIEW_RADIUS = 100
@@ -34,6 +34,7 @@ class Soldier:
         self.name = name
         self.health = health
 
+        self.velocity: list[float] = [0, 0]
         self.position = position if position is not None else [0, 0]
         self.angle: float = float(random.randint(0, 360))
         self.facing_angle: float = 0.0
@@ -63,19 +64,19 @@ class Soldier:
     def is_alive(self) -> bool:
         return self.health > 0
 
-    def move(self, screen: Surface) -> None:
-        if not self.active:
+    def move(self, screen: Surface, obstacles: list[Rect]) -> None:
+        if not self.active or not self.velocity:
             return
 
         self._update()
-
-        if not self.velocity:
-            return
 
         self.position[0] += self.velocity[0]
         self.position[1] += self.velocity[1]
         self.position[0] = max(0, min(self.position[0], screen.get_width() - self.size))
         self.position[1] = max(0, min(self.position[1], screen.get_height() - self.size))
+
+        if self._is_obstacle_ahead(obstacles):
+            self._turn_left(90)
 
         if self._is_edge_ahead(screen):
             self._turn_right()
@@ -89,7 +90,7 @@ class Soldier:
 
         for nearby_soldier in self.nearby_soldiers:
             if nearby_soldier.team != self.team:
-                self.health = max(0, self.health - 20)
+                nearby_soldier.take_damage(20)
 
                 self.velocity[0] *= -1
                 self.velocity[1] *= -1
@@ -222,11 +223,11 @@ class Soldier:
         angle_rad: float = math.radians(self.angle)
         self.velocity = [math.cos(angle_rad) * self.step, math.sin(angle_rad) * self.step]
 
-    def _turn_left(self) -> None:
-        self.angle = (self.angle - self.TURN_ANGLE) % 360
+    def _turn_left(self, angle: float = TURN_ANGLE) -> None:
+        self.angle = (self.angle - angle) % 360
 
-    def _turn_right(self) -> None:
-        self.angle = (self.angle + self.TURN_ANGLE) % 360
+    def _turn_right(self, angle: float = TURN_ANGLE) -> None:
+        self.angle = (self.angle + angle) % 360
 
     def _is_edge_ahead(self, screen: Surface) -> bool:
         dx, dy = self._get_direction()
@@ -242,3 +243,16 @@ class Soldier:
             or future_y <= self.size
             or future_y >= screen.get_height() - self.size
         )
+
+    def _is_obstacle_ahead(self, obstacles: list[Rect]) -> bool:
+        dx, dy = self._get_direction()
+        lookahead = self.size * 4
+
+        future_x = self.position[0] + dx * lookahead
+        future_y = self.position[1] + dy * lookahead
+
+        for obstacle in obstacles:
+            if obstacle.collidepoint(future_x, future_y):
+                return True
+
+        return False
