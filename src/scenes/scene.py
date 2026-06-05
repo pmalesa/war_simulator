@@ -66,7 +66,7 @@ class Scene:
 
     def _update(self) -> None:
         for soldier in self._soldiers:
-            soldier.move(self._screen, self._obstacles)
+            soldier.update(self._screen, self._obstacles)
             soldier.update_nearby_soldiers(self._soldiers)
             soldier.update_visible_soldiers(self._soldiers)
 

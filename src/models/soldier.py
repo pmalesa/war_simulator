@@ -4,6 +4,8 @@ import random
 import pygame
 from pygame import Rect, Surface
 
+from src.models.projectile import Projectile
+
 
 class Soldier:
     MAX_HEALTH: int = 100
@@ -55,20 +57,17 @@ class Soldier:
         self.nearby_soldiers = nearby_soldiers if nearby_soldiers is not None else []
         self.visible_soldiers = []
 
-    def shoot(self) -> None:
-        pass
-
     def take_damage(self, damage: int) -> None:
         self.health = max(0, self.health - damage)
 
     def is_alive(self) -> bool:
         return self.health > 0
 
-    def move(self, screen: Surface, obstacles: list[Rect]) -> None:
+    def update(self, screen: Surface, obstacles: list[Rect]) -> None:
         if not self.active or not self.velocity:
             return
 
-        self._update()
+        self._update_velocity()
 
         self.position[0] += self.velocity[0]
         self.position[1] += self.velocity[1]
@@ -193,6 +192,13 @@ class Soldier:
             random.randint(self.size, screen.get_height() - self.size),
         ]
 
+    def shoot(self) -> Projectile:
+        return Projectile(
+            position=self.position.copy(),
+            angle=self.angle,
+            team=self.team,
+        )
+
     def _draw_direction_line(self, screen: Surface) -> None:
         if self.angle is None:
             return
@@ -219,7 +225,7 @@ class Soldier:
         angle_rad: float = math.radians(self.angle)
         return (math.cos(angle_rad), math.sin(angle_rad))
 
-    def _update(self) -> None:
+    def _update_velocity(self) -> None:
         angle_rad: float = math.radians(self.angle)
         self.velocity = [math.cos(angle_rad) * self.step, math.sin(angle_rad) * self.step]
 

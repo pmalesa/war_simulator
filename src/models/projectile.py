@@ -1,19 +1,29 @@
+import math
+
 import pygame
 from pygame import Surface
 
+from src.models.team import Team
 from src.utils.utils import clamp
 
 
 class Projectile:
     DEFAULT_DAMAGE = 10
-    DEFAULT_VELOCITY = 100
+    DEFAULT_STEP = 100
     DEFAULT_SIZE = 2
     DEFAULT_COLOR = (255, 255, 255)
 
-    def __init__(self, position: list[int], direction: list[int]):
+    def __init__(self, position: list[int], angle: float, team: Team):
         self.position: list[int] = position
-        self.direction: list[int] = direction
+        self.angle: float = angle
+        self.team: Team = team
         self.collision: bool = False
+
+        angle_rad: float = math.radians(self.angle)
+        self.velocity: list[float] = [
+            math.cos(angle_rad) * self.step,
+            math.sin(angle_rad) * self.step,
+        ]
 
     def move(self):
         if not self.collision:
