@@ -10,7 +10,7 @@ from src.models.team import TEAM_COLORS, Team
 class Scene:
     DEFAULT_WIDTH = 1200
     DEFAULT_HEIGHT = 1024
-    WALL_COUNT = 10
+    WALL_COUNT = 20
     WALL_COLOR = (150, 150, 150)
     FPS = 60
 
@@ -136,11 +136,11 @@ class Scene:
 
         for _ in range(count):
             if random.randint(0, 100) < 50:
-                width = random.randint(80, 180)
+                width = random.randint(80, 160)
                 height = random.randint(15, 20)
             else:
                 width = random.randint(15, 20)
-                height = random.randint(80, 180)
+                height = random.randint(80, 160)
 
             x = random.randint(0, self._width - width)
             y = random.randint(0, self._height - height)
