@@ -21,7 +21,7 @@ class Soldier:
         self,
         id: int,
         name: str,
-        health: int = MAX_HEALTH,
+        max_health: int = MAX_HEALTH,
         position: list[float] | None = None,
         team: int = 1,
         color: tuple[int] | None = None,
@@ -34,7 +34,8 @@ class Soldier:
     ):
         self.id = id
         self.name = name
-        self.health = health
+        self.current_health = max_health
+        self.max_health = max_health
 
         self.velocity: list[float] = [0, 0]
         self.position = position if position is not None else [0, 0]
@@ -58,10 +59,10 @@ class Soldier:
         self.visible_soldiers = []
 
     def take_damage(self, damage: int) -> None:
-        self.health = max(0, self.health - damage)
+        self.current_health = max(0, self.current_health - damage)
 
     def is_alive(self) -> bool:
-        return self.health > 0
+        return self.current_health > 0
 
     def update(self, screen: Surface, obstacles: list[Rect]) -> None:
         if not self.active or not self.velocity:
@@ -187,6 +188,7 @@ class Soldier:
 
     def respawn(self, screen: Surface) -> None:
         self.active = True
+        self.current_health = self.max_health
         self.position = [
             random.randint(self.size, screen.get_width() - self.size),
             random.randint(self.size, screen.get_height() - self.size),
