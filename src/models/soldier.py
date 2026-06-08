@@ -121,6 +121,7 @@ class Soldier:
             )
         pygame.draw.circle(screen, self.color, self.position, self.size)
         self._draw_direction_line(screen)
+        self._draw_health_bar(screen)
 
     def update_nearby_soldiers(self, soldiers: list["Soldier"]) -> None:
         if not self.active:
@@ -216,6 +217,13 @@ class Soldier:
         ]
 
         pygame.draw.line(screen, self.direction_line_color, start_pos, end_pos, 2)
+
+    def _draw_health_bar(self, screen: Surface) -> None:
+        health_percentage: float = self.current_health / self.max_health
+        health_bar_fill: float = 2 * self.size * health_percentage
+        start_pos = [self.position[0] - self.size, self.position[1] - 1.7 * self.size]
+        end_pos = [start_pos[0] + health_bar_fill, start_pos[1]]
+        pygame.draw.line(screen, (255, 255, 255), start_pos, end_pos, 3)
 
     def _is_someone_ahead(self) -> bool:
         for soldier in self.visible_soldiers:
