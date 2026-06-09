@@ -4,6 +4,7 @@ import random
 import pygame
 from pygame import Rect, Surface
 
+from src.models.health_bar_color import HEALTH_BAR_COLORS, HealthBarColor
 from src.models.projectile import Projectile
 
 
@@ -223,7 +224,15 @@ class Soldier:
         health_bar_fill: float = 2 * self.size * health_percentage
         start_pos = [self.position[0] - self.size, self.position[1] - 1.7 * self.size]
         end_pos = [start_pos[0] + health_bar_fill, start_pos[1]]
-        pygame.draw.line(screen, (255, 255, 255), start_pos, end_pos, 3)
+
+        if health_percentage >= 0.7:
+            health_bar_color = HEALTH_BAR_COLORS[HealthBarColor.GREEN]
+        elif health_percentage >= 0.3:
+            health_bar_color = HEALTH_BAR_COLORS[HealthBarColor.YELLOW]
+        else:
+            health_bar_color = HEALTH_BAR_COLORS[HealthBarColor.RED]
+
+        pygame.draw.line(screen, health_bar_color, start_pos, end_pos, 3)
 
     def _is_someone_ahead(self) -> bool:
         for soldier in self.visible_soldiers:
