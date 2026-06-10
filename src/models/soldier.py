@@ -11,7 +11,7 @@ from src.models.projectile import Projectile
 class Soldier:
     MAX_HEALTH: int = 100
     DEFAULT_STEP: int = 2
-    DEFAULT_SIZE: int = 7
+    DEFAULT_SIZE: int = 15
     DEFAULT_AWARENESS_RADIUS = 10
     DEFAULT_FIELD_OF_VIEW_RADIUS = 100
     DEFAULT_FIELD_OF_VIEW_ANGLE = 60

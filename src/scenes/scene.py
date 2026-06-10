@@ -1,3 +1,4 @@
+import math
 import random
 
 import pygame
@@ -12,6 +13,7 @@ class Scene:
     DEFAULT_HEIGHT = 1024
     WALL_COUNT = 20
     WALL_COLOR = (150, 150, 150)
+    MAX_SOLDIERS = 20
     FPS = 60
 
     def __init__(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT) -> None:
@@ -19,7 +21,7 @@ class Scene:
         self._height = height
         self._running = False
         self._pause = False
-        self._max_soldiers = 200
+        self._max_soldiers = Scene.MAX_SOLDIERS
         self._soldiers = self._generate_soldiers()
         self._obstacles = self._generate_obstacles(Scene.WALL_COUNT)
 
@@ -131,21 +133,37 @@ class Scene:
 
         return soldiers
 
-    def _generate_obstacles(self, count: int) -> list[Rect]:
-        obstacles = []
+    def _generate_obstacles(self, n_obstacles: int) -> list[Rect]:
+        obstacles: list[Rect] = []
 
-        for _ in range(count):
+        # Divide the scene into n_obstacles regions
+        n_rows = math.ceil(math.sqrt(n_obstacles))
+        n_cols = math.ceil(n_obstacles / n_rows)
+
+        region_w = self._width / n_cols
+        region_h = self._height / n_rows
+        all_regions: list[tuple[float, float]] = []
+
+        for i in range(n_obstacles):
+            all_regions.append(((i % n_cols) * region_w, (i // n_cols) * region_h))
+
+        # Randomly select only n_obstacles regions
+        selected_regions: list[tuple[float, float]] = random.sample(all_regions, n_obstacles)
+
+        # Generate obstacles in selected regions
+        for selected_region in selected_regions:
+            region_x, region_y = selected_region
             if random.randint(0, 100) < 50:
-                width = random.randint(80, 160)
-                height = random.randint(15, 20)
+                obstacle_w = random.randint(80, 160)
+                obstacle_h = random.randint(15, 20)
             else:
-                width = random.randint(15, 20)
-                height = random.randint(80, 160)
+                obstacle_w = random.randint(15, 20)
+                obstacle_h = random.randint(80, 160)
 
-            x = random.randint(0, self._width - width)
-            y = random.randint(0, self._height - height)
+            obstacle_x = random.uniform(region_x, region_x + region_w)
+            obstacle_y = random.uniform(region_y, region_y + region_h)
 
-            obstacle = Rect(x, y, width, height)
+            obstacle = Rect(obstacle_x, obstacle_y, obstacle_w, obstacle_h)
             obstacles.append(obstacle)
 
         return obstacles
