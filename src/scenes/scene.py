@@ -2,17 +2,16 @@ import math
 import random
 
 import pygame
-from pygame import Rect
 
 from src.models.soldier import Soldier
 from src.models.team import TEAM_COLORS, Team
+from src.models.wall import Wall
 
 
 class Scene:
     DEFAULT_WIDTH = 1200
     DEFAULT_HEIGHT = 1024
     WALL_COUNT = 20
-    WALL_COLOR = (150, 150, 150)
     MAX_SOLDIERS = 20
     FPS = 60
 
@@ -22,8 +21,8 @@ class Scene:
         self._running = False
         self._pause = False
         self._max_soldiers = Scene.MAX_SOLDIERS
-        self._soldiers = self._generate_soldiers()
-        self._obstacles = self._generate_obstacles(Scene.WALL_COUNT)
+        self._soldiers: list[Soldier] = self._generate_soldiers()
+        self._walls: list[Wall] = self._generate_walls(Scene.WALL_COUNT)
 
         pygame.init()
 
@@ -64,19 +63,19 @@ class Scene:
                     self._pause = not self._pause
                 if event.key == pygame.K_r:
                     self._soldiers = self._generate_soldiers()
-                    self._obstacles = self._generate_obstacles(Scene.WALL_COUNT)
+                    self._walls = self._generate_walls(Scene.WALL_COUNT)
 
     def _update(self) -> None:
         for soldier in self._soldiers:
-            soldier.update(self._screen, self._obstacles)
+            soldier.update(self._screen, self._walls)
             soldier.update_nearby_soldiers(self._soldiers)
             soldier.update_visible_soldiers(self._soldiers)
 
     def _draw(self) -> None:
         self._screen.fill((30, 30, 30))
 
-        for obstacle in self._obstacles:
-            pygame.draw.rect(self._screen, Scene.WALL_COLOR, obstacle)
+        for wall in self._walls:
+            wall.draw(self._screen)
 
         for soldier in self._soldiers:
             soldier.draw(self._screen)
@@ -133,12 +132,12 @@ class Scene:
 
         return soldiers
 
-    def _generate_obstacles(self, n_obstacles: int) -> list[Rect]:
-        obstacles: list[Rect] = []
+    def _generate_walls(self, n_walls: int) -> list[Wall]:
+        walls: list[Wall] = []
 
-        # Divide the scene into n_obstacles regions
-        n_rows = math.ceil(math.sqrt(n_obstacles))
-        n_cols = math.ceil(n_obstacles / n_rows)
+        # Divide the scene into n_walls regions
+        n_rows = math.ceil(math.sqrt(n_walls))
+        n_cols = math.ceil(n_walls / n_rows)
         n_regions = n_rows * n_cols
 
         region_w = self._width / n_cols
@@ -147,30 +146,30 @@ class Scene:
             ((i % n_cols) * region_w, (i // n_cols) * region_h) for i in range(n_regions)
         ]
 
-        # Randomly select only n_obstacles regions
-        selected_regions: list[tuple[float, float]] = random.sample(all_regions, n_obstacles)
+        # Randomly select only n_walls regions
+        selected_regions: list[tuple[float, float]] = random.sample(all_regions, n_walls)
 
-        # Generate obstacles in selected regions
+        # Generate walls in selected regions
         long_side_range: tuple[int, int] = (80, 160)
         short_side_range: tuple[int, int] = (15, 20)
         for selected_region in selected_regions:
             region_x, region_y = selected_region
             is_horizontal: bool = random.choice([True, False])
             if is_horizontal:
-                obstacle_w = random.randint(*long_side_range)
-                obstacle_h = random.randint(*short_side_range)
+                wall_w = random.randint(*long_side_range)
+                wall_h = random.randint(*short_side_range)
             else:
-                obstacle_w = random.randint(*short_side_range)
-                obstacle_h = random.randint(*long_side_range)
+                wall_w = random.randint(*short_side_range)
+                wall_h = random.randint(*long_side_range)
 
-            obstacle_x = random.uniform(region_x, region_x + region_w - obstacle_w)
-            obstacle_y = random.uniform(region_y, region_y + region_h - obstacle_h)
+            wall_x = random.uniform(region_x, region_x + region_w - wall_w)
+            wall_y = random.uniform(region_y, region_y + region_h - wall_h)
 
             # Cap the wall size to region size
-            obstacle_w = min(obstacle_w, region_w)
-            obstacle_h = min(obstacle_h, region_h)
+            wall_w = min(wall_w, region_w)
+            wall_h = min(wall_h, region_h)
 
-            obstacle = Rect(obstacle_x, obstacle_y, obstacle_w, obstacle_h)
-            obstacles.append(obstacle)
+            wall = Wall(wall_x, wall_y, wall_w, wall_h)
+            walls.append(wall)
 
-        return obstacles
+        return walls

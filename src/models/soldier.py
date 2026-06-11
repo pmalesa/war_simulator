@@ -2,10 +2,11 @@ import math
 import random
 
 import pygame
-from pygame import Rect, Surface
+from pygame import Surface
 
 from src.models.health_bar_color import HEALTH_BAR_COLORS, HealthBarColor
 from src.models.projectile import Projectile
+from src.models.wall import Wall
 
 
 class Soldier:
@@ -65,7 +66,7 @@ class Soldier:
     def is_alive(self) -> bool:
         return self.current_health > 0
 
-    def update(self, screen: Surface, obstacles: list[Rect]) -> None:
+    def update(self, screen: Surface, walls: list[Wall]) -> None:
         if not self.active or not self.velocity:
             return
 
@@ -76,7 +77,7 @@ class Soldier:
         self.position[0] = max(0, min(self.position[0], screen.get_width() - self.size))
         self.position[1] = max(0, min(self.position[1], screen.get_height() - self.size))
 
-        if self._is_obstacle_ahead(obstacles):
+        if self._is_wall_ahead(walls):
             self._turn_left(90)
 
         if self._is_edge_ahead(screen):
@@ -269,15 +270,15 @@ class Soldier:
             or future_y >= screen.get_height() - self.size
         )
 
-    def _is_obstacle_ahead(self, obstacles: list[Rect]) -> bool:
+    def _is_wall_ahead(self, walls: list[Wall]) -> bool:
         dx, dy = self._get_direction()
         lookahead = self.size * 4
 
         future_x = self.position[0] + dx * lookahead
         future_y = self.position[1] + dy * lookahead
 
-        for obstacle in obstacles:
-            if obstacle.collidepoint(future_x, future_y):
+        for wall in walls:
+            if wall.rect.collidepoint(future_x, future_y):
                 return True
 
         return False
