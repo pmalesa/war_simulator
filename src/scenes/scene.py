@@ -139,29 +139,36 @@ class Scene:
         # Divide the scene into n_obstacles regions
         n_rows = math.ceil(math.sqrt(n_obstacles))
         n_cols = math.ceil(n_obstacles / n_rows)
+        n_regions = n_rows * n_cols
 
         region_w = self._width / n_cols
         region_h = self._height / n_rows
-        all_regions: list[tuple[float, float]] = []
-
-        for i in range(n_obstacles):
-            all_regions.append(((i % n_cols) * region_w, (i // n_cols) * region_h))
+        all_regions: list[tuple[float, float]] = [
+            ((i % n_cols) * region_w, (i // n_cols) * region_h) for i in range(n_regions)
+        ]
 
         # Randomly select only n_obstacles regions
         selected_regions: list[tuple[float, float]] = random.sample(all_regions, n_obstacles)
 
         # Generate obstacles in selected regions
+        long_side_range: tuple[int, int] = (80, 160)
+        short_side_range: tuple[int, int] = (15, 20)
         for selected_region in selected_regions:
             region_x, region_y = selected_region
-            if random.randint(0, 100) < 50:
-                obstacle_w = random.randint(80, 160)
-                obstacle_h = random.randint(15, 20)
+            is_horizontal: bool = random.choice([True, False])
+            if is_horizontal:
+                obstacle_w = random.randint(*long_side_range)
+                obstacle_h = random.randint(*short_side_range)
             else:
-                obstacle_w = random.randint(15, 20)
-                obstacle_h = random.randint(80, 160)
+                obstacle_w = random.randint(*short_side_range)
+                obstacle_h = random.randint(*long_side_range)
 
-            obstacle_x = random.uniform(region_x, region_x + region_w)
-            obstacle_y = random.uniform(region_y, region_y + region_h)
+            obstacle_x = random.uniform(region_x, region_x + region_w - obstacle_w)
+            obstacle_y = random.uniform(region_y, region_y + region_h - obstacle_h)
+
+            # Cap the wall size to region size
+            obstacle_w = min(obstacle_w, region_w)
+            obstacle_h = min(obstacle_h, region_h)
 
             obstacle = Rect(obstacle_x, obstacle_y, obstacle_w, obstacle_h)
             obstacles.append(obstacle)
