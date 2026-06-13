@@ -12,7 +12,7 @@ class Scene:
     DEFAULT_WIDTH = 1200
     DEFAULT_HEIGHT = 1024
     WALL_COUNT = 20
-    MAX_SOLDIERS = 20
+    MAX_SOLDIERS = 200
     FPS = 60
 
     def __init__(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT) -> None:
