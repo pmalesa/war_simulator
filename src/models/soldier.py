@@ -2,7 +2,7 @@ import math
 import random
 
 import pygame
-from pygame import Surface
+from pygame import Rect, Surface
 
 from src.models.health_bar_color import HEALTH_BAR_COLORS, HealthBarColor
 from src.models.projectile import Projectile
@@ -72,16 +72,30 @@ class Soldier:
 
         self._update_velocity()
 
+        old_position = self.position.copy()
+
         self.position[0] += self.velocity[0]
         self.position[1] += self.velocity[1]
-        self.position[0] = max(0, min(self.position[0], screen.get_width() - self.size))
-        self.position[1] = max(0, min(self.position[1], screen.get_height() - self.size))
+        self.position[0] = max(self.size, min(self.position[0], screen.get_width() - self.size))
+        self.position[1] = max(self.size, min(self.position[1], screen.get_height() - self.size))
+
+        if self._collides_with_wall(walls):
+            self.position = old_position
+            self.angle = (self.angle + 180 + random.uniform(-45, 45)) % 360
+            self._update_velocity()
+            return
 
         if self._is_wall_ahead(walls):
-            self._turn_left(90)
+            if random.choice([True, False]):
+                self._turn_left(90)
+            else:
+                self._turn_right(90)
 
         if self._is_edge_ahead(screen):
-            self._turn_right()
+            if random.choice([True, False]):
+                self._turn_right()
+            else:
+                self._turn_left()
 
         if self._is_someone_ahead():
             self.color = (255, 255, 0)
@@ -101,11 +115,11 @@ class Soldier:
                     self.active = False
 
         if self.visible_soldiers:
-            x1, y2 = self.position
+            x1, y1 = self.position
             x2, y2 = self.visible_soldiers[0].position
 
             target_x = x2 - x1
-            target_y = y2 - y2
+            target_y = y2 - y1
             cross = self.velocity[0] * target_y - self.velocity[1] * target_x
 
             if cross > 0:
@@ -245,6 +259,11 @@ class Soldier:
         angle_rad: float = math.radians(self.angle)
         return (math.cos(angle_rad), math.sin(angle_rad))
 
+    def _get_rect(self) -> Rect:
+        return Rect(
+            self.position[0] - self.size, self.position[1] - self.size, self.size * 2, self.size * 2
+        )
+
     def _update_velocity(self) -> None:
         angle_rad: float = math.radians(self.angle)
         self.velocity = [math.cos(angle_rad) * self.step, math.sin(angle_rad) * self.step]
@@ -279,6 +298,15 @@ class Soldier:
 
         for wall in walls:
             if wall.rect.collidepoint(future_x, future_y):
+                return True
+
+        return False
+
+    def _collides_with_wall(self, walls: list[Wall]) -> bool:
+        soldier_rect = self._get_rect()
+
+        for wall in walls:
+            if soldier_rect.colliderect(wall.rect):
                 return True
 
         return False
