@@ -1,5 +1,6 @@
 import math
 import random
+from enum import IntEnum
 
 import pygame
 from pygame import Rect, Surface
@@ -7,6 +8,18 @@ from pygame import Rect, Surface
 from src.models.health_bar_color import HEALTH_BAR_COLORS, HealthBarColor
 from src.models.projectile import Projectile
 from src.models.wall import Wall
+
+
+class SoldierAction(IntEnum):
+    MOVE_FORWARD = 0
+    TURN_LEFT = 1
+    TURN_RIGHT = 2
+    SHOOT = 3
+    DO_NOTHING = 4
+
+    @classmethod
+    def count(cls) -> int:
+        return len(cls)
 
 
 class Soldier:
@@ -59,6 +72,20 @@ class Soldier:
 
         self.nearby_soldiers = nearby_soldiers if nearby_soldiers is not None else []
         self.visible_soldiers = []
+
+    def step(self, action_id: int) -> None:
+        action = SoldierAction(action_id)
+        match action:
+            case SoldierAction.MOVE_FORWARD:
+                pass
+            case SoldierAction.TURN_LEFT:
+                self._turn_left()
+            case SoldierAction.TURN_RIGHT:
+                self._turn_right()
+            case SoldierAction.SHOOT:
+                self._shoot()
+            case SoldierAction.DO_NOTHING:
+                pass
 
     def take_damage(self, damage: int) -> None:
         self.current_health = max(0, self.current_health - damage)
@@ -211,7 +238,7 @@ class Soldier:
             random.randint(self.size, screen.get_height() - self.size),
         ]
 
-    def shoot(self) -> Projectile:
+    def _shoot(self) -> Projectile:
         return Projectile(
             position=self.position.copy(),
             angle=self.angle,
