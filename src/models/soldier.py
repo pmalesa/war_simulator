@@ -103,12 +103,8 @@ class Soldier:
         self._update_nearby_soldiers(soldiers)
         self._update_visible_soldiers(soldiers)
 
-        old_position = self.position.copy()
-
         if self._collides_with_wall(walls):
-            self.position = old_position
-            self.angle = (self.angle + 180 + random.uniform(-45, 45)) % 360
-            self._update_velocity()
+            self._resolve_wall_collision(walls)
             return
 
         if self._is_wall_ahead(walls):
@@ -119,9 +115,9 @@ class Soldier:
 
         if self._is_edge_ahead(screen):
             if random.choice([True, False]):
-                self._turn_right()
+                self._turn_right(90)
             else:
-                self._turn_left()
+                self._turn_left(90)
 
         if self._is_someone_ahead():
             self.color = (255, 255, 0)
@@ -343,3 +339,32 @@ class Soldier:
                 return True
 
         return False
+
+    def _resolve_wall_collision(self, walls: list[Wall]) -> None:
+        soldier_rect: Rect = self._get_rect()
+
+        for wall in walls:
+            if not soldier_rect.colliderect(wall.rect):
+                continue
+
+            overlap_left = soldier_rect.right - wall.rect.left
+            overlap_right = wall.rect.right - soldier_rect.left
+            overlap_top = soldier_rect.bottom - wall.rect.top
+            overlap_bottom = wall.rect.bottom - soldier_rect.top
+
+            min_overlap = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
+
+            if min_overlap == overlap_left:
+                self.position[0] -= overlap_left
+                self.angle = 180
+            elif min_overlap == overlap_right:
+                self.position[0] += overlap_right
+                self.angle = 0
+            elif min_overlap == overlap_top:
+                self.position[1] -= overlap_top
+                self.angle = 270
+            else:
+                self.position[1] += overlap_bottom
+                self.angle = 90
+
+            self.angle = (self.angle + random.uniform(-30, 30)) % 360
