@@ -18,6 +18,7 @@ class Projectile:
         self.angle: float = angle
         self.team: Team = team
         self.collision: bool = False
+        self.step = self.DEFAULT_STEP
 
         angle_rad: float = math.radians(self.angle)
         self.velocity: list[float] = [

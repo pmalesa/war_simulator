@@ -41,7 +41,7 @@ class Soldier:
         team: int = 1,
         color: tuple[int] | None = None,
         size: int = DEFAULT_SIZE,
-        step: int = DEFAULT_STEP,
+        step_size: int = DEFAULT_STEP,
         awareness_radius: int = DEFAULT_AWARENESS_RADIUS,
         fov_angle: int = DEFAULT_FIELD_OF_VIEW_ANGLE,
         fov_range: int = DEFAULT_FIELD_OF_VIEW_RANGE,
@@ -64,7 +64,7 @@ class Soldier:
         self.team = team
 
         self.size = size
-        self.step = step
+        self.step_size = step_size
 
         self.awareness_radius = awareness_radius
         self.fov_angle = fov_angle
@@ -73,11 +73,14 @@ class Soldier:
         self.nearby_soldiers = nearby_soldiers if nearby_soldiers is not None else []
         self.visible_soldiers = []
 
-    def step(self, action_id: int) -> None:
+    def step(self, action_id: int, screen: Surface) -> None:
+        if not self.active:
+            return
+
         action = SoldierAction(action_id)
         match action:
             case SoldierAction.MOVE_FORWARD:
-                pass
+                self._move(screen)
             case SoldierAction.TURN_LEFT:
                 self._turn_left()
             case SoldierAction.TURN_RIGHT:
@@ -93,18 +96,14 @@ class Soldier:
     def is_alive(self) -> bool:
         return self.current_health > 0
 
-    def update(self, screen: Surface, walls: list[Wall]) -> None:
-        if not self.active or not self.velocity:
+    def update(self, screen: Surface, walls: list[Wall], soldiers: list["Soldier"]) -> None:
+        if not self.active:
             return
 
-        self._update_velocity()
+        self._update_nearby_soldiers(soldiers)
+        self._update_visible_soldiers(soldiers)
 
         old_position = self.position.copy()
-
-        self.position[0] += self.velocity[0]
-        self.position[1] += self.velocity[1]
-        self.position[0] = max(self.size, min(self.position[0], screen.get_width() - self.size))
-        self.position[1] = max(self.size, min(self.position[1], screen.get_height() - self.size))
 
         if self._collides_with_wall(walls):
             self.position = old_position
@@ -166,7 +165,7 @@ class Soldier:
         self._draw_direction_line(screen)
         self._draw_health_bar(screen)
 
-    def update_nearby_soldiers(self, soldiers: list["Soldier"]) -> None:
+    def _update_nearby_soldiers(self, soldiers: list["Soldier"]) -> None:
         if not self.active:
             return
 
@@ -189,7 +188,7 @@ class Soldier:
             if distance_squared <= radius_squared:
                 self.nearby_soldiers.append(soldier)
 
-    def update_visible_soldiers(self, soldiers: list["Soldier"]) -> None:
+    def _update_visible_soldiers(self, soldiers: list["Soldier"]) -> None:
         if not self.active:
             return
 
@@ -293,7 +292,14 @@ class Soldier:
 
     def _update_velocity(self) -> None:
         angle_rad: float = math.radians(self.angle)
-        self.velocity = [math.cos(angle_rad) * self.step, math.sin(angle_rad) * self.step]
+        self.velocity = [math.cos(angle_rad) * self.step_size, math.sin(angle_rad) * self.step_size]
+
+    def _move(self, screen: Surface) -> None:
+        self._update_velocity()
+        self.position[0] += self.velocity[0]
+        self.position[1] += self.velocity[1]
+        self.position[0] = max(self.size, min(self.position[0], screen.get_width() - self.size))
+        self.position[1] = max(self.size, min(self.position[1], screen.get_height() - self.size))
 
     def _turn_left(self, angle: float = TURN_ANGLE) -> None:
         self.angle = (self.angle - angle) % 360

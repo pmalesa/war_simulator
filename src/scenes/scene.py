@@ -67,9 +67,10 @@ class Scene:
 
     def _update(self) -> None:
         for soldier in self._soldiers:
-            soldier.update(self._screen, self._walls)
-            soldier.update_nearby_soldiers(self._soldiers)
-            soldier.update_visible_soldiers(self._soldiers)
+            soldier.update(self._screen, self._walls, self._soldiers)
+            # action_id: int = random.choice([0, 1, 2, 3, 4])
+            action_id: int = 0
+            soldier.step(action_id, self._screen)
 
     def _draw(self) -> None:
         self._screen.fill((30, 30, 30))
