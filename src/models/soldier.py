@@ -107,6 +107,10 @@ class Soldier:
             self._resolve_wall_collision(walls)
             return
 
+        if self._collides_with_soldier(soldiers):
+            self._resolve_soldier_collision(soldiers)
+            return
+
         if self._is_wall_ahead(walls):
             if random.choice([True, False]):
                 self._turn_left(90)
@@ -125,16 +129,6 @@ class Soldier:
         else:
             self.color = self.default_color
             self.direction_line_color = (0, 0, 0)
-
-        for nearby_soldier in self.nearby_soldiers:
-            if nearby_soldier.team != self.team:
-                nearby_soldier.take_damage(20)
-
-                self.velocity[0] *= -1
-                self.velocity[1] *= -1
-
-                if not self.is_alive():
-                    self.active = False
 
         if self.visible_soldiers:
             x1, y1 = self.position
@@ -233,6 +227,11 @@ class Soldier:
             random.randint(self.size, screen.get_height() - self.size),
         ]
 
+    def get_rect(self) -> Rect:
+        return Rect(
+            self.position[0] - self.size, self.position[1] - self.size, self.size * 2, self.size * 2
+        )
+
     def _shoot(self) -> Projectile:
         return Projectile(
             position=self.position.copy(),
@@ -281,11 +280,6 @@ class Soldier:
         angle_rad: float = math.radians(self.angle)
         return (math.cos(angle_rad), math.sin(angle_rad))
 
-    def _get_rect(self) -> Rect:
-        return Rect(
-            self.position[0] - self.size, self.position[1] - self.size, self.size * 2, self.size * 2
-        )
-
     def _update_velocity(self) -> None:
         angle_rad: float = math.radians(self.angle)
         self.velocity = [math.cos(angle_rad) * self.step_size, math.sin(angle_rad) * self.step_size]
@@ -332,7 +326,7 @@ class Soldier:
         return False
 
     def _collides_with_wall(self, walls: list[Wall]) -> bool:
-        soldier_rect = self._get_rect()
+        soldier_rect = self.get_rect()
 
         for wall in walls:
             if soldier_rect.colliderect(wall.rect):
@@ -340,8 +334,23 @@ class Soldier:
 
         return False
 
+    def _collides_with_soldier(self, soldiers: list["Soldier"]) -> bool:
+        soldier_rect = self.get_rect()
+
+        for soldier in soldiers:
+            if soldier == self:
+                continue
+
+            if not soldier.active:
+                continue
+
+            if soldier_rect.colliderect(soldier.get_rect()):
+                return True
+
+        return False
+
     def _resolve_wall_collision(self, walls: list[Wall]) -> None:
-        soldier_rect: Rect = self._get_rect()
+        soldier_rect: Rect = self.get_rect()
 
         for wall in walls:
             if not soldier_rect.colliderect(wall.rect):
@@ -368,3 +377,44 @@ class Soldier:
                 self.angle = 90
 
             self.angle = (self.angle + random.uniform(-30, 30)) % 360
+
+    def _resolve_soldier_collision(self, soldiers: list["Soldier"]) -> None:
+        soldier_rect = self.get_rect()
+
+        for soldier in soldiers:
+            if soldier == self:
+                continue
+
+            if not soldier.active:
+                continue
+
+            if not soldier_rect.colliderect(soldier.get_rect()):
+                continue
+
+            collided_soldier_rect = soldier.get_rect()
+
+            overlap_left = soldier_rect.right - collided_soldier_rect.left
+            overlap_right = collided_soldier_rect.right - soldier_rect.left
+            overlap_top = soldier_rect.bottom - collided_soldier_rect.top
+            overlap_bottom = collided_soldier_rect.bottom - soldier_rect.top
+
+            min_overlap = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
+
+            if min_overlap == overlap_left:
+                self.position[0] -= overlap_left
+                self.angle = 180
+            elif min_overlap == overlap_right:
+                self.position[0] += overlap_right
+                self.angle = 0
+            elif min_overlap == overlap_top:
+                self.position[1] -= overlap_top
+                self.angle = 270
+            else:
+                self.position[1] += overlap_bottom
+                self.angle = 90
+
+            self.angle = (self.angle + random.uniform(-30, 30)) % 360
+
+            if self.team != soldier.team:
+                self.take_damage(10)
+                soldier.take_damage(10)
