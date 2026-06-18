@@ -130,19 +130,6 @@ class Soldier:
             self.color = self.default_color
             self.direction_line_color = (0, 0, 0)
 
-        if self.visible_soldiers:
-            x1, y1 = self.position
-            x2, y2 = self.visible_soldiers[0].position
-
-            target_x = x2 - x1
-            target_y = y2 - y1
-            cross = self.velocity[0] * target_y - self.velocity[1] * target_x
-
-            if cross > 0:
-                self._turn_left()
-            else:
-                self._turn_right()
-
     def draw(self, screen: Surface) -> None:
         if not self.active:
             return
