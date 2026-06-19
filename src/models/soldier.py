@@ -92,6 +92,8 @@ class Soldier:
 
     def take_damage(self, damage: int) -> None:
         self.current_health = max(0, self.current_health - damage)
+        if self.current_health == 0:
+            self.active = False
 
     def is_alive(self) -> bool:
         return self.current_health > 0
@@ -214,6 +216,7 @@ class Soldier:
             random.randint(self.size, screen.get_height() - self.size),
         ]
 
+    # TODO: To remove
     def get_rect(self) -> Rect:
         return Rect(
             self.position[0] - self.size, self.position[1] - self.size, self.size * 2, self.size * 2
@@ -322,8 +325,6 @@ class Soldier:
         return False
 
     def _collides_with_soldier(self, soldiers: list["Soldier"]) -> bool:
-        soldier_rect = self.get_rect()
-
         for soldier in soldiers:
             if soldier == self:
                 continue
@@ -331,7 +332,14 @@ class Soldier:
             if not soldier.active:
                 continue
 
-            if soldier_rect.colliderect(soldier.get_rect()):
+            dx = self.position[0] - soldier.position[0]
+            dy = self.position[1] - soldier.position[1]
+
+            distance_squared = dx * dx + dy * dy
+
+            collision_distance = self.size + soldier.size
+
+            if distance_squared <= collision_distance**2:
                 return True
 
         return False
@@ -366,8 +374,6 @@ class Soldier:
             self.angle = (self.angle + random.uniform(-30, 30)) % 360
 
     def _resolve_soldier_collision(self, soldiers: list["Soldier"]) -> None:
-        soldier_rect = self.get_rect()
-
         for soldier in soldiers:
             if soldier == self:
                 continue
@@ -375,32 +381,32 @@ class Soldier:
             if not soldier.active:
                 continue
 
-            if not soldier_rect.colliderect(soldier.get_rect()):
+            dx = self.position[0] - soldier.position[0]
+            dy = self.position[1] - soldier.position[1]
+
+            distance = math.hypot(dx, dy)
+            min_distance = self.size + soldier.size
+
+            if distance >= min_distance:
                 continue
 
-            collided_soldier_rect = soldier.get_rect()
+            if distance == 0:
+                dx = random.uniform(-1, 1)
+                dy = random.uniform(-1, 1)
+                distance = math.hypot(dx, dy)
 
-            overlap_left = soldier_rect.right - collided_soldier_rect.left
-            overlap_right = collided_soldier_rect.right - soldier_rect.left
-            overlap_top = soldier_rect.bottom - collided_soldier_rect.top
-            overlap_bottom = collided_soldier_rect.bottom - soldier_rect.top
+            overlap = min_distance - distance
 
-            min_overlap = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
+            push_x = dx / distance * overlap
+            push_y = dy / distance * overlap
 
-            if min_overlap == overlap_left:
-                self.position[0] -= overlap_left
-                self.angle = 180
-            elif min_overlap == overlap_right:
-                self.position[0] += overlap_right
-                self.angle = 0
-            elif min_overlap == overlap_top:
-                self.position[1] -= overlap_top
-                self.angle = 270
-            else:
-                self.position[1] += overlap_bottom
-                self.angle = 90
+            self.position[0] += push_x / 2
+            self.position[1] += push_y / 2
 
-            self.angle = (self.angle + random.uniform(-30, 30)) % 360
+            soldier.position[0] -= push_x / 2
+            soldier.position[1] -= push_y / 2
+
+            self.angle = (math.degrees(math.atan2(push_y, push_x)) + random.uniform(-30, 30)) % 360
 
             if self.team != soldier.team:
                 self.take_damage(10)
