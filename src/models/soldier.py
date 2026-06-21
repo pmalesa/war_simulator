@@ -114,16 +114,10 @@ class Soldier:
             return
 
         if self._is_wall_ahead(walls):
-            if random.choice([True, False]):
-                self._turn_left(90)
-            else:
-                self._turn_right(90)
+            self._handle_wall_ahead()
 
         if self._is_edge_ahead(screen):
-            if random.choice([True, False]):
-                self._turn_right(90)
-            else:
-                self._turn_left(90)
+            self._handle_edge_ahead()
 
         if self._is_someone_ahead():
             self.color = (255, 255, 0)
@@ -143,6 +137,20 @@ class Soldier:
         pygame.draw.circle(screen, self.color, self.position, self.size)
         self._draw_direction_line(screen)
         self._draw_health_bar(screen)
+
+    def respawn(self, screen: Surface) -> None:
+        self.active = True
+        self.current_health = self.max_health
+        self.position = [
+            random.randint(self.size, screen.get_width() - self.size),
+            random.randint(self.size, screen.get_height() - self.size),
+        ]
+
+    # TODO: To remove
+    def get_rect(self) -> Rect:
+        return Rect(
+            self.position[0] - self.size, self.position[1] - self.size, self.size * 2, self.size * 2
+        )
 
     def _update_nearby_soldiers(self, soldiers: list["Soldier"]) -> None:
         if not self.active:
@@ -207,20 +215,6 @@ class Soldier:
 
             if dot >= cos_limit:
                 self.visible_soldiers.append(soldier)
-
-    def respawn(self, screen: Surface) -> None:
-        self.active = True
-        self.current_health = self.max_health
-        self.position = [
-            random.randint(self.size, screen.get_width() - self.size),
-            random.randint(self.size, screen.get_height() - self.size),
-        ]
-
-    # TODO: To remove
-    def get_rect(self) -> Rect:
-        return Rect(
-            self.position[0] - self.size, self.position[1] - self.size, self.size * 2, self.size * 2
-        )
 
     def _shoot(self) -> Projectile:
         return Projectile(
@@ -302,6 +296,12 @@ class Soldier:
             or future_y >= screen.get_height() - self.size
         )
 
+    def _handle_edge_ahead(self) -> None:
+        if random.choice([True, False]):
+            self._turn_right(90)
+        else:
+            self._turn_left(90)
+
     def _is_wall_ahead(self, walls: list[Wall]) -> bool:
         dx, dy = self._get_direction()
         lookahead = self.size * 4
@@ -314,6 +314,12 @@ class Soldier:
                 return True
 
         return False
+
+    def _handle_wall_ahead(self) -> None:
+        if random.choice([True, False]):
+            self._turn_left(90)
+        else:
+            self._turn_right(90)
 
     def _collides_with_wall(self, walls: list[Wall]) -> bool:
         soldier_rect = self.get_rect()
